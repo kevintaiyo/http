@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Formulário</title>
+</head>
+<body>
+    <center>
+    <h1>Formulário! Protocolo HTTP - CRUD</h1>
+    <form>
+        <h3>POST</h3>
+        <label>CPF:</label>
+        <input type="text" id="cpfCadastro">
+        <br>
+        <label>Nome:</label>
+        <input type="text" id="nome">
+        <br>
+        <label>Idade:</label>
+        <input type="text" id="idade">
+        <input type="button" onclick="enviarDados()" value="Enviar">
+        <br>
+        <h3>PUT</h3>
+        <label>ID:</label>
+        <input type="text" id="id" readonly><br>
+        <label>Nome:</label>
+        <input type="text" id="nomeAtualizar">
+        <br>
+        <label>Idade:</label>
+        <input type="text" id="idadeAtualizar">
+        <br>
+        <label>CPF:</label>
+        <input type="text" id="cpfAtualizar" placeholder="Digite o CPF para busca">
+        <br>
+        <input type="button" onclick="buscarDados()" value="Buscar">
+        <input type="button" onclick="atualizarDados()" value="Atualizar">
+        <br>
+        <h3>DELETE</h3>
+        <label>CPF:</label>
+        <input type="text" id="cpf">
+        <input type="button" onclick="deletarDados()" value="Deletar">
+        <h1>Dados Cadastrais - GET</h1>
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Idade</th>
+                <th>CPF</th>
+            </tr>
+            <tbody id="tabela-corpo"></tbody>
+        </table>
+    </form> 
+
+    <script>
+        //POST
+        function enviarDados(){
+            const nome = document.getElementById('nome').value;
+            const idade = document.getElementById('idade').value;
+            const cpf = document.getElementById('cpfCadastro').value;
+
+            fetch('pessoas',{
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nome: nome, idade: idade, cpf: cpf})
+            })
+            .then(response => response.json())
+            .then(data => {
+                // atualiza os valores na tela
+                //document.getElementById('mostrarNome').textContent = data.nome;
+                //document.getElementById('mostrarIdade').textContent = data.idade;
+                //document.getElementById('mostrarCpf').textContent = data.cpf;
+            
+                // limpa os inputs do formulário
+                document.getElementById('nome').value = '';
+                document.getElementById('idade').value = '';
+                document.getElementById('cpfCadastro').value = '';
+            });
+            
+        }
+
+
+
+        //GET   
+        function buscarDados() {
+            const cpf = document.getElementById('cpfAtualizar').value;
+            fetch(`pessoas`, {
+                method: 'GET'
+            })
+            .then(response => response.json())
+            .then(data => {
+                const pessoaEncontrada = data.find(pessoa => pessoa.cpf === cpf);
+                
+                console.log(data)
+                if (pessoaEncontrada) {
+                    document.getElementById('nomeAtualizar').value = pessoaEncontrada.nome;
+                    document.getElementById('idadeAtualizar').value = pessoaEncontrada.idade;
+                    document.getElementById('cpfAtualizar').value = pessoaEncontrada.cpf;
+                    document.getElementById('id').value = pessoaEncontrada.id;
+                } else {
+                    alert('Pessoa não encontrada!');
+                }
+            })
+        }
+        
+          
+
+        //PUT
+            function atualizarDados() {
+                const id = document.getElementById('id').value;
+                const nome = document.getElementById('nomeAtualizar').value;
+                const idade = document.getElementById('idadeAtualizar').value;
+                const cpf = document.getElementById('cpfAtualizar').value;
+
+                fetch(`pessoas/${id}`,{
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type' : 'application/json'
+                    },
+                    body: JSON.stringify({ nome: nome, idade: idade,cpf: cpf})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // limpa os inputs do formulário
+                    document.getElementById('id').value = '';
+                    document.getElementById('nomeAtualizar').value = '';
+                    document.getElementById('idadeAtualizar').value = '';
+                    document.getElementById('cpfAtualizar').value = '';
+                });
+                
+            }
+
+            
+        //DELETE
+        function deletarDados() {
+            const cpf = document.getElementById("cpf").value;
+          
+            fetch(`pessoas`)
+              .then(response => response.json())
+              .then(data => {
+                document.getElementById('cpf').value = '';
+                data.forEach(obj => {
+                  if (obj.cpf === cpf) {
+                    fetch(`pessoas/${obj.id}`, {
+                      method: 'DELETE'
+                    });
+                  }
+                });
+              });
+          }
+          fetch(`pessoas`)
+        .then(response => response.json())
+        .then(data => {
+            const tabela = document.getElementById('tabela-corpo');
+            //Utilizado o loop ForEach para interar cada objeto no array retornado a API
+            data.forEach((objeto) => {
+                //Adicionado essa string de template ao conteudo HTML do corpo da tabela.
+                const linha = `<tr>
+                    <td>${objeto.id}</td>
+                    <td>${objeto.nome}</td>
+                    <td>${objeto.idade}</td>
+                    <td>${objeto.cpf}</td>
+                </tr>`;
+                tabela.innerHTML += linha;
+            })
+        })
+          
+    </script>
+
+    <input type="button" onclick="aperte()" value="Aperte">
+</center>
+
+    <script src="script.js"></script>
+</body>
+</html>
